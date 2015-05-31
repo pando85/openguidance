@@ -47,19 +47,6 @@ if [ $SPECIFIC_TEST ]; then
     TEST_LOCATION=$( echo $SPECIFIC_TEST | sed "s/\(\([^.]\+[.]\)*\)\(\)/guidancelib.\1test.test_\3/" )
     COVERAGE_TARGET="guidancelib.${SPECIFIC_TEST}"
     COVERAGE_OPTIONS="${COVERAGE_OPTIONS} --cover-package=${COVERAGE_TARGET} --cover-branches --cover-min-percentage=100"
-#else
-#    TEST_LOCATION=""
-#    COVERAGE_TARGET="guidancelib"
-#    COVERAGE_OPTIONS="${COVERAGE_OPTIONS} --cover-package=${COVERAGE_TARGET} --cover-min-percentage=56"
-#
-#    echo
-#    echo "[distribution]: setup.py check"
-#    python ${PROJECTDIR}/setup.py check
-#    if [ $? != 0 ]; then
-#        echo "distribution metadata check failure" >&2
-#        exit 1
-#    fi
-#    echo "done."
 fi
 
 

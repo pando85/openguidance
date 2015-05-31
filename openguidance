@@ -1,5 +1,106 @@
 #!/usr/bin/python3
 
+import guidancelib
+
+welcome_message = _("""Welcome:""")
+
+class ConfigOptionsBase(object):
+    """ Add command line options to override the openguidance configuration.
+
+        It's possible to use a general option for arbitrary config keys, and
+        also shortcut options which target a fixed config key. If a key is
+        specified more than once, the one that got parsed last wins.
+
+        There are two slightly different implementations, to support both
+        argparse and optparse (for forward and backward compatibility).
+    """
+    configdict = {}
+
+    _metavar = 'KEY=VALUE'
+
+    @classmethod
+    def addGeneralOption(cls, parser, names, help):
+        kwargs = {'help': help, 'metavar': cls._metavar}
+        kwargs.update(cls._config_params())
+        parser.add_argument(*names, **kwargs)
+
+    @classmethod
+    def addShortcutOption(cls, parser, names, key, type, help):
+        kwargs = {'help': help}
+        kwargs.update(cls._shortcut_params(key, type))
+        parser.add_argument(*names, **kwargs)
+
+    @classmethod
+    def _splitoption(cls, option):
+        errormsg = "bad option: %r; use %r" % (option, cls._metavar)
+        if not '=' in option:
+            raise cls._error(option, errormsg)
+        key, val = option.split('=', 1)
+        if not (key and val):
+            raise cls._error(errormsg)
+        return key, val
+
+import argparse
+
+class ConfigOptions(ConfigOptionsBase):
+
+    @classmethod
+    def _config_params(cls):
+        class Action(argparse.Action):
+            def __call__(self, actingparser, namespace, values, optstr):
+                for option in values:
+                    try:
+                        key, value = cls._splitoption(option)
+                    except ValueError as e:
+                        actingparser.error(e)
+                    cls.configdict[key] = value
+        return {'action': Action, 'nargs': '+'}
+
+    @classmethod
+    def _shortcut_params(cls, key, type=str):
+        class Action(argparse.Action):
+            def __call__(self, actingparser, namespace, values, optstr):
+                cls.configdict[key] = values
+        return {'action': Action, 'type': type}
+
+    @classmethod
+    def _error(cls, msg):
+        return ValueError(msg)
+
+parser = argparse.ArgumentParser(description='''OpenGuidance Version ''' + guidancelib.VERSION)
+
+parser.add_argument('--version', dest='version', action='store_true', help='Print version information and exit.')
+parser.add_argument('--info', dest='info', action='store_true',
+    help='Print extended program information and exit.')
+parser.add_argument('--newconfig', dest='newconfig', action='store_true',
+    help='Create a new config file next to your current one, e.g. ~/.config/openguidance/openguidance.conf.new.')
+
+#ConfigOptions.addShortcutOption(parser, ('--port', '-p'), key='server.port', type=int, help='Set the port the server will listen to.')
+ConfigOptions.addGeneralOption(parser, ('--conf', '-c'), help='Override configuration values.')
+
 
 if __name__ == '__main__':
-    print("Hello word")
+    import sys
+
+    args = parser.parse_args()
+
+    if args.info:
+        print(guidancelib.info())
+        sys.exit(0)
+
+    if args.version:
+        print(guidancelib.version())
+        sys.exit(0)
+
+    if args.newconfig:
+        filepath = guidancelib.pathprovider.configuration_file() + '.new'
+        guidancelib.create_default_config_file(filepath)
+        sys.exit(0)
+
+    if not guidancelib.pathprovider.configuration_file_exists():
+        filepath = guidancelib.pathprovider.configuration_file()
+        guidancelib.create_default_config_file(filepath)
+        print(welcome_message)
+        sys.exit(0)
+
+    guidancelib.setup_config(ConfigOptions.configdict)
