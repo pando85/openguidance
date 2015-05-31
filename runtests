@@ -1,0 +1,95 @@
+#!/bin/sh
+#
+##############################################################################
+#
+# run a number of tests for the project
+#
+##############################################################################
+
+USAGE="Usage: $(basename $0) [-d OUTPUT_DIR] [TEST_TARGET]"
+
+PROJECTDIR=`dirname $0`
+
+TEST_EXCLUDE_REGEX=''
+COVERAGE_OPTIONS="--with-coverage --cover-erase"
+
+while getopts "d:" FLAG "$@" ; do
+
+    if [ "$FLAG" = ":" -o "$FLAG" = "?" ]; then
+        echo $USAGE >&2
+        exit 1
+    fi
+
+    if [ "$FLAG" = "d" ]; then
+        if [ ! -e "$OPTARG" ]; then
+            mkdir -p "$OPTARG"
+        fi
+        if [ ! -d "$OPTARG" ]; then
+            echo "output directory $OPTARG does not exist" >&2
+            exit 1
+        fi
+        COVERAGE_OPTIONS="${COVERAGE_OPTIONS} "
+    fi
+done
+# The first non-flag argument is at index $OPTIND, so shift one fewer
+# to move it into $1
+shift `expr $OPTIND - 1`
+
+SPECIFIC_TEST="$1"
+
+if [ ! -d ${PROJECTDIR} -o ! -f ${PROJECTDIR}/openguidance ]; then
+    echo "cannot find main script: 'openguidance'" >&2
+    echo "PROJECTDIR not set correctly? to fix, edit $0" >&2
+    exit 1
+fi
+
+if [ $SPECIFIC_TEST ]; then
+    TEST_LOCATION=$( echo $SPECIFIC_TEST | sed "s/\(\([^.]\+[.]\)*\)\(\)/guidancelib.\1test.test_\3/" )
+    COVERAGE_TARGET="guidancelib.${SPECIFIC_TEST}"
+    COVERAGE_OPTIONS="${COVERAGE_OPTIONS} --cover-package=${COVERAGE_TARGET} --cover-branches --cover-min-percentage=100"
+#else
+#    TEST_LOCATION=""
+#    COVERAGE_TARGET="guidancelib"
+#    COVERAGE_OPTIONS="${COVERAGE_OPTIONS} --cover-package=${COVERAGE_TARGET} --cover-min-percentage=56"
+#
+#    echo
+#    echo "[distribution]: setup.py check"
+#    python ${PROJECTDIR}/setup.py check
+#    if [ $? != 0 ]; then
+#        echo "distribution metadata check failure" >&2
+#        exit 1
+#    fi
+#    echo "done."
+fi
+
+
+# nosetests
+if [ ! "$TESTERS" ]; then
+    for i in "" "2" "3"; do
+        TESTERS="${TESTERS} nosetests${i}"
+    done
+fi
+for TESTER in $TESTERS; do
+    if [ $(command -v $TESTER) ]; then
+        RUN="${TESTER} -e ${TEST_EXCLUDE_REGEX} ${COVERAGE_OPTIONS} ${TEST_LOCATION}"
+        echo
+        echo "[${TESTER}]: ${RUN}"
+        $RUN
+        if [ $? != 0 ]; then
+            failed="$failed $TESTER"
+        else
+            passed="$passed $TESTER"
+        fi
+    fi
+done
+
+if [ "$failed" ]; then
+    echo "FAILED: $failed" >&2
+    exit 1
+fi
+
+if [ ! "$passed" ]; then
+    echo "no unittest runners found!" >&2
+    echo "get nosetests from https://nose.readthedocs.org/en/latest/" >&2
+    exit 1
+fi
