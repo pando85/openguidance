@@ -3,7 +3,7 @@
 VERSION = "0.0.1"
 __version__ = VERSION
 
-import logging.infong
+import logging
 
 from guidancelib import configuration as cfg
 
