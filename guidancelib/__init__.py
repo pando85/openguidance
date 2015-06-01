@@ -9,6 +9,10 @@ from guidancelib import configuration as cfg
 
 config = None
 
+from guidancelib import gps
+from guidancelib import guidance
+from guidancelib import pathprovider
+
 def version():
     return """OpenGuidance {cm_version}
 open source agricultural GPS guidance
@@ -26,10 +30,10 @@ def setup_config(override_dict=None):
         See :mod:`~guidancelib.configuration`.
     """
     defaults = cfg.from_defaults()
-    filecfg = cfg.from_configparser(pathprovider.configurationFile())
-    custom = defaults.replace(filecfg, on_error=logging.infong.error)
+    filecfg = cfg.from_configparser(pathprovider.configuration_file())
+    custom = defaults.replace(filecfg, on_error=logging.error)
     if override_dict:
-        custom = custom.replace(override_dict, on_error=logging.infong.error)
+        custom = custom.replace(override_dict, on_error=logging.error)
     global config
     config = custom
     _notify_about_config_updates(defaults, filecfg)
@@ -50,19 +54,19 @@ def _notify_about_config_updates(default, known_config):
             deprecated.append(transform(property.key))
 
     if new:
-        logging.info(_('''New configuration options available:
+        logging.info(('''New configuration options available:
                     %s
                 Using default values for now.'''),
               '\n\t\t\t'.join(new))
     if deprecated:
-        logging.info(_('''The following configuration options are not used anymore:
+        logging.info(('''The following configuration options are not used anymore:
                     %s'''),
               '\n\t\t\t'.join(deprecated))
     if new or deprecated:
-        logging.info(_('Start with --newconfig to generate a new default config'
+        logging.info(('Start with --newconfig to generate a new default config'
                 ' file next to your current one.'))
 
 def create_default_config_file(path):
     """ Creates or overwrites a default configuration file at `path` """
     cfg.write_to_file(cfg.from_defaults(), path)
-    logging.info(_('Default configuration file written to %(path)r'), {'path': path})
+    logging.info(('Default configuration file written to %(path)r'), {'path': path})

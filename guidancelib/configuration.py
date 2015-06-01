@@ -13,11 +13,12 @@ def from_defaults():
 
     c = ConfigBuilder()
 
-    with c['gps.simulate'] as transcode:
+    with c['gps.simulate'] as simulate:
         simulate.value = True
-        simulate.doc = _("""
+        simulate.doc = ("""
                     SIMULATE simulate input signal of GPS.
                             """)
+    return c.to_configuration()
 
 def from_configparser(filepath):
     """Have an ini file that the python configparser can understand? Pass the filepath
