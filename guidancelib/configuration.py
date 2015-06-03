@@ -13,11 +13,16 @@ def from_defaults():
 
     c = ConfigBuilder()
 
-    with c['gps.simulate'] as simulate:
-        simulate.value = True
-        simulate.doc = ("""
-                    SIMULATE simulate input signal of GPS.
+    with c['gps.input'] as input_:
+        input_.value = "simulate"
+        input_.doc = ("""
+                    INPUT kind of GPS input. Can be: 'simulate', 'usb', 'socket'
                             """)
+    with c['gps.simulate_file'] as simulate_file:
+        simulate_file.value = "guidancelib/test/samples/gps_coordinates.txt"
+        simulate_file.doc = ("""
+                           SIMULATE_FILE file to simulate GPS input.
+                           """)
     return c.to_configuration()
 
 def from_configparser(filepath):
