@@ -20,13 +20,13 @@ class ConfigOptionsBase(object):
     _metavar = 'KEY=VALUE'
 
     @classmethod
-    def addGeneralOption(cls, parser, names, help):
+    def add_general_option(cls, parser, names, help):
         kwargs = {'help': help, 'metavar': cls._metavar}
         kwargs.update(cls._config_params())
         parser.add_argument(*names, **kwargs)
 
     @classmethod
-    def addShortcutOption(cls, parser, names, key, type, help):
+    def add_shotcut_option(cls, parser, names, key, type, help):
         kwargs = {'help': help}
         kwargs.update(cls._shortcut_params(key, type))
         parser.add_argument(*names, **kwargs)
@@ -78,8 +78,8 @@ parser.add_argument('--info', dest='info', action='store_true',
 parser.add_argument('--newconfig', dest='newconfig', action='store_true',
     help='Create a new config file next to your current one, e.g. ~/.config/openguidance/openguidance.conf.new.')
 
-#ConfigOptions.addShortcutOption(parser, ('--port', '-p'), key='server.port', type=int, help='Set the port the server will listen to.')
-ConfigOptions.addGeneralOption(parser, ('--conf', '-c'), help='Override configuration values.')
+#ConfigOptions.add_shotcut_option(parser, ('--port', '-p'), key='server.port', type=int, help='Set the port the server will listen to.')
+ConfigOptions.add_general_option(parser, ('--conf', '-c'), help='Override configuration values.')
 
 
 if __name__ == '__main__':
