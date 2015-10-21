@@ -13,6 +13,9 @@ from guidancelib import gps
 from guidancelib import guidance
 from guidancelib import pathprovider
 
+import logging
+logging.root.setLevel(logging.INFO)
+
 def version():
     return """OpenGuidance {cm_version}
 open source agricultural GPS guidance

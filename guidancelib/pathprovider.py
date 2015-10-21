@@ -36,3 +36,10 @@ def configuration_file():
 
 def configuration_file_exists():
     return os.path.exists(configuration_file())
+
+def abs_path(filepath):
+    if os.path.isabs(filepath):
+        path = filepath
+    else:
+        path = os.path.join(get_config_path(), filepath)
+    return os.path.normpath(path)
