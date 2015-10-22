@@ -24,17 +24,16 @@ def from_defaults():
                            SIMULATE_FILE file to simulate GPS input.
                            """)
 
-    with c['kalman.frequency'] as frequency:
-        frequency.value = 50.0
+    with c['gps.frequency'] as frequency:
+        frequency.value = 10.0
         frequency.doc = ("""
-                     FREQUENCY of kalman filter update. Recomended same as GPS
-                     if not other sensors added.
+                     GPS_FREQUENCY frequency of GPS in Hz.
                      """)
 
-    with c['kalman.gps_frequency'] as gps_frequency:
-        gps_frequency.value = 10.0
-        gps_frequency.doc = ("""
-                     GPS_FREQUENCY frequency of GPS.
+    with c['tractor.axis_distance'] as axis_distance:
+        axis_distance.value = 2.9
+        axis_distance.doc = ("""
+                     AXIS_DISTANCE distance between wheel axis in meters.
                      """)
 
     return c.to_configuration()
