@@ -23,6 +23,20 @@ def from_defaults():
         simulate_file.doc = ("""
                            SIMULATE_FILE file to simulate GPS input.
                            """)
+
+    with c['kalman.frequency'] as frequency:
+        frequency.value = 50.0
+        frequency.doc = ("""
+                     FREQUENCY of kalman filter update. Recomended same as GPS
+                     if not other sensors added.
+                     """)
+
+    with c['kalman.gps_frequency'] as gps_frequency:
+        gps_frequency.value = 10.0
+        gps_frequency.doc = ("""
+                     GPS_FREQUENCY frequency of GPS.
+                     """)
+
     return c.to_configuration()
 
 def from_configparser(filepath):
