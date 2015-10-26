@@ -1,6 +1,8 @@
 import threading
 import utm
 import logging
+import pynmea2
+import serial
 
 import guidancelib
 
@@ -21,6 +23,31 @@ class GPS(threading.Thread):
         logging.info('Starting GPS thread')
         if guidancelib.config['gps.input'] == 'simulate':
             self._simulation()
+        elif guidancelib.config['gps.input'] == 'serial':
+            self._serial()
+
+
+    def _serial(self):
+        logging.info('Starting GPS serial connection')
+        try:
+            logging.info('Try open: %s', guidancelib.config['gps.port'])
+            gps_serial = serial.Serial(guidancelib.config['gps.port'])
+            gps_serial.baudrate = 115200 
+            gps_serial.bytesize = 8      
+            gps_serial.parity   = 'N'    
+            gps_serial.stopbits = 1
+
+            while not self.stop_request.isSet():
+                gps_nmea = pynmea2.parse(gps_serial.readline())
+                self.gps_queue.put(self._get_utm([gps_nmea.latitude, gps_nmea.longitude]))
+                logging.debug('Position: x -> %s, y -> %s', self.x, self.y)
+            
+            logging.debug('Closing serial connection')
+            gps_serial.close()
+
+        except:
+            sleep(1)
+            self._serial()
 
     def _simulation(self):
         with open(guidancelib.config['gps.simulate_file']) as simulate_file:
@@ -38,9 +65,9 @@ class GPS(threading.Thread):
             except:
                 raise
 
-    def _parse_file(self, simulation):
-        gps_coordinates_str = [coordinate.split(',') for coordinate in simulation]
-        gps_coordinates = [[float(i) for i in coordinate ]for coordinate in gps_coordinates_str]
+    def _parse_file(self, simulation_file):
+        gps_nmea = [pynmea2.parse(line) for line in simulation_file]
+        gps_coordinates = [[gps_nmea_line.latitude, gps_nmea_line.longitude] for gps_nmea_line in gps_nmea]
         return gps_coordinates
 
     def _get_utm(self, altitude, longitude):

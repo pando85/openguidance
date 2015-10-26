@@ -9,7 +9,7 @@ class ExtendedKalmanFilter(object):
     """Extended Kalman Filter for vehicle tracking"""
     def __init__(self):
         self.dim_x = 5 
-        self.dim_z = 3 
+        self.dim_z = 4 
 
         self._dt = 1.0 / guidancelib.config['gps.frequency']
 
@@ -26,9 +26,10 @@ class ExtendedKalmanFilter(object):
         self._I = eye(self.dim_x)
 
     def _get_noise_covariance(self):
-        s_error_gps = 0.5 # Probably a function related to number of satelites could be ok
-        s_error_speed = 1
-        R = diag([s_error_gps**2, s_error_gps**2, s_error_speed**2])
+        s_error_gps = 2 # Probably a function related to number of satelites could be ok
+        s_error_heading = 4
+        s_error_speed = 4
+        R = diag([s_error_gps**2, s_error_gps**2, s_error_heading**2, s_error_speed**2])
         return R
 
     def _get_Q(self):
@@ -44,7 +45,8 @@ class ExtendedKalmanFilter(object):
         JH = zeros((self.dim_z, self.dim_x)) # 2 if only gps, more for additional sensors
         JH[0,0] = 1   # gps x
         JH[1,1] = 1   # gps y
-        JH[2,3] = 1   # gps calculated speed
+        JH[2,2] = 1   # gps calculated heading
+        JH[3,3] = 1   # gps calculated speed
         return matrix(JH) 
 
     def _f_function(self, x, u):
@@ -100,7 +102,7 @@ class ExtendedKalmanFilter(object):
         K = (self._P * self._JH.T) * inv(S)
 
         # Update the estimate via measurement
-        hx = array([self._x[i] for i in [0, 1, 3]])
+        hx = array([self._x[i] for i in [0, 1, 2, 3]])
         self._x = self._x + K * (z.reshape(self._JH.shape[0],1) - hx.reshape(self._JH.shape[0],1))
 
         # Update the error covariance
