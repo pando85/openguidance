@@ -13,9 +13,7 @@ from guidancelib import gps
 from guidancelib import guidance
 from guidancelib import pathprovider
 from guidancelib import kalman
-
-import logging
-logging.root.setLevel(logging.INFO)
+from guidancelib import util
 
 def version():
     return """OpenGuidance {cm_version}

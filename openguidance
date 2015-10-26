@@ -2,6 +2,9 @@
 
 import guidancelib
 
+import logging
+logging.root.setLevel(logging.INFO)
+
 welcome_message = """First time running OpenGuidance,
 please set up your configuration file:"""
 
@@ -71,16 +74,14 @@ class ConfigOptions(ConfigOptionsBase):
 parser = argparse.ArgumentParser(description='''OpenGuidance Version ''' + guidancelib.VERSION)
 
 parser.add_argument('--version', dest='version', action='store_true', help='Print version information and exit.')
+parser.add_argument('--debug', dest='debug', action='store_true', help='Set logging level to DEBUG.')
 parser.add_argument('--info', dest='info', action='store_true',
     help='Print extended program information and exit.')
-#parser.add_argument('--config-path', dest='config-path', action='store_true',
-#    help='Change configuration file path.')
 parser.add_argument('--newconfig', dest='newconfig', action='store_true',
     help='Create a new config file next to your current one, e.g. ~/.config/openguidance/openguidance.conf.new.')
 
 #ConfigOptions.add_shotcut_option(parser, ('--port', '-p'), key='server.port', type=int, help='Set the port the server will listen to.')
 ConfigOptions.add_general_option(parser, ('--conf', '-c'), help='Override configuration values.')
-
 
 if __name__ == '__main__':
     import sys
@@ -94,6 +95,9 @@ if __name__ == '__main__':
     if args.version:
         print(guidancelib.version())
         sys.exit(0)
+
+    if args.debug:
+        logging.root.setLevel(logging.DEBUG)
 
     if args.newconfig:
         filepath = guidancelib.pathprovider.configuration_file() + '.new'

@@ -1,5 +1,4 @@
 
-
 def phrase_to_lines(phrase, length=80):
     """splits a string along whitespace and distributes the parts into
     lines of the given length.

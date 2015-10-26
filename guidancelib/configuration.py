@@ -7,17 +7,31 @@ import logging
 
 from collections import Mapping, namedtuple, OrderedDict
 
+from guidancelib import util
 
 def from_defaults():
     '''load default configuration. must work if path to standard config file is unknown.'''
 
     c = ConfigBuilder()
 
+    with c['general.debug'] as debug:
+        debug.value = False
+        debug.doc = ("""
+                     DEBUG activate debug logging level.
+                     """)
+
     with c['gps.input'] as input_:
         input_.value = "simulate"
         input_.doc = ("""
-                    INPUT kind of GPS input. Can be: 'simulate', 'usb', 'socket'
+                    INPUT kind of GPS input. Can be: 'simulate', 'serial', 'socket'
                             """)
+
+    with c['gps.port'] as port:
+        port.value = "/dev/ttyUSB0"
+        port.doc = ("""
+                    PORT for serial GPS.
+                    """)
+
     with c['gps.simulate_file'] as simulate_file:
         simulate_file.value = "guidancelib/test/samples/gps_coordinates.txt"
         simulate_file.doc = ("""
@@ -35,6 +49,7 @@ def from_defaults():
         axis_distance.doc = ("""
                      AXIS_DISTANCE distance between wheel axis in meters.
                      """)
+
 
     return c.to_configuration()
 
